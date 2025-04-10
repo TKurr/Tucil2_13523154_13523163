@@ -1,8 +1,6 @@
 package com;
 
-import com.CompressionUtils;
 import java.awt.Graphics;
-import com.QuadTreeNode;
 import java.awt.Rectangle;
 
 import java.awt.Color;
@@ -13,13 +11,31 @@ import javax.imageio.ImageIO;
 
 public class Compression {
 
-    public static QuadTreeNode buildQuadTree(BufferedImage img, Rectangle region, double threshold, int minBlockSize) {
+    // Fungsi untuk memilih metode pengukuran error
+    public static double computeError(BufferedImage img, Rectangle region, Color avgColor, String errorMethod) {
+        switch (errorMethod) {
+            case "1": // Variance
+                return CompressionUtils.computeVariance(img, region, avgColor);
+            case "2": // MAD
+                return CompressionUtils.computeMAD(img, region, avgColor);
+            case "3": // Max Pixel Difference
+                return CompressionUtils.computeMaxPixelDifference(img, region, avgColor);
+            case "4": // Entropy
+                return CompressionUtils.computeEntropy(img, region);
+            case "5": // Structural Similarity Index (SSIM)
+                return CompressionUtils.computeSSIM(img, region);
+            default:
+                throw new IllegalArgumentException("Metode error tidak valid.");
+        }
+    }
+
+    public static QuadTreeNode buildQuadTree(BufferedImage img, Rectangle region, double threshold, int minBlockSize, String errorMethod) {
         if (region.width <= minBlockSize || region.height <= minBlockSize) {
             return new QuadTreeNode(region, CompressionUtils.computeAverageColor(img, region), true);
         }
 
         Color avgColor = CompressionUtils.computeAverageColor(img, region);
-        double error = CompressionUtils.computeVariance(img, region, avgColor); // Bisa diganti dengan metode lain
+        double error = computeError(img, region, avgColor, errorMethod); 
 
         if (error <= threshold) {
             return new QuadTreeNode(region, avgColor, true);
@@ -41,7 +57,7 @@ public class Compression {
 
         boolean shouldDivide = true;
         for (Rectangle subRegion : subRegions) {
-            double subError = CompressionUtils.computeVariance(img, subRegion, CompressionUtils.computeAverageColor(img, subRegion));
+            double subError = computeError(img, subRegion, CompressionUtils.computeAverageColor(img, subRegion), errorMethod);
             if (subError <= threshold) {
                 shouldDivide = false;
                 break;
@@ -54,7 +70,7 @@ public class Compression {
 
         QuadTreeNode node = new QuadTreeNode(region, avgColor, false);
         for (int i = 0; i < 4; i++) {
-            node.children[i] = buildQuadTree(img, subRegions[i], threshold, minBlockSize);
+            node.children[i] = buildQuadTree(img, subRegions[i], threshold, minBlockSize, errorMethod);
         }
 
         return node;
@@ -63,7 +79,6 @@ public class Compression {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        // User Inputs
         System.out.print("Masukkan alamat absolut gambar yang akan dikompresi: ");
         String inputPath = scanner.nextLine();
 
@@ -79,18 +94,37 @@ public class Compression {
         System.out.print("Masukkan ukuran blok minimum: ");
         int minBlockSize = scanner.nextInt();
 
-        String outputPath = System.getProperty("user.dir") + "\\..\\test\\output.png";
+        String errorMethod = "";
+        while (true) {
+            System.out.println("\nPilih metode pengukuran error:");
+            System.out.println("1. Variance");
+            System.out.println("2. Mean Absolute Deviation (MAD)");
+            System.out.println("3. Max Pixel Difference");
+            System.out.println("4. Entropy");
+            System.out.println("5. Structural Similarity Index (SSIM)");
+            System.out.print("Pilih antara 1 - 5: ");
+            errorMethod = scanner.next();
+
+            if (errorMethod.equals("1") || errorMethod.equals("2") || errorMethod.equals("3") || errorMethod.equals("4") || errorMethod.equals("5")) {
+                break;
+            } else {
+                System.out.println("Masukan salah! Silakan pilih antara 1 sampai 5.");
+            }
+        }
+
+        System.out.print("Masukkan nama file output (tanpa ekstensi .png): ");
+        String outputFileName = scanner.next();
+        String outputPath = "test/" + outputFileName + ".png";
 
         scanner.close();
 
         try {
-            // Load image
             BufferedImage img = ImageIO.read(new File(inputPath));
             long originalSize = inputFile.length();
 
             long startTime = System.nanoTime();
 
-            QuadTreeNode root = buildQuadTree(img, new Rectangle(0, 0, img.getWidth(), img.getHeight()), threshold, minBlockSize);
+            QuadTreeNode root = buildQuadTree(img, new Rectangle(0, 0, img.getWidth(), img.getHeight()), threshold, minBlockSize, errorMethod);
 
             BufferedImage compressedImg = new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_INT_RGB);
             Graphics g = compressedImg.getGraphics();
@@ -99,7 +133,7 @@ public class Compression {
             ImageIO.write(compressedImg, "png", new File(outputPath));
 
             long endTime = System.nanoTime();
-            long executionTime = (endTime - startTime) / 1_000_000;
+            long executionTime = (endTime - startTime) / 1000000;
 
             long compressedSize = new File(outputPath).length();
             double compressionRatio = (1.0 - ((double) compressedSize / originalSize)) * 100;
