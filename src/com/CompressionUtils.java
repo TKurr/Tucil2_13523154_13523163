@@ -25,24 +25,6 @@ public class CompressionUtils {
         return sumVar / count;
     }
 
-    public static int computeDepth(QuadTreeNode node) {
-        if (node == null || node.isLeaf) return 0;
-        int maxDepth = 0;
-        for (QuadTreeNode child : node.children) {
-            maxDepth = Math.max(maxDepth, computeDepth(child));
-        }
-        return maxDepth + 1;
-    }
-
-    public static int countNodes(QuadTreeNode node) {
-        if (node == null) return 0;
-        int count = 1;
-        for (QuadTreeNode child : node.children) {
-            count += countNodes(child);
-        }
-        return count;
-    }
-
     public static Color computeAverageColor(BufferedImage img, Rectangle region) {
         int sumR = 0, sumG = 0, sumB = 0, count = 0;
         for (int y = region.y; y < region.y + region.height; y++) {

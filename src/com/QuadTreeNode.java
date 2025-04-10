@@ -15,4 +15,22 @@ public class QuadTreeNode {
         this.isLeaf = leaf;
         this.children = new QuadTreeNode[4];
     }
+
+    public static int computeDepth(QuadTreeNode node) {
+        if (node == null || node.isLeaf) return 0;
+        int maxDepth = 0;
+        for (QuadTreeNode child : node.children) {
+            maxDepth = Math.max(maxDepth, computeDepth(child));
+        }
+        return maxDepth + 1;
+    }
+
+    public static int countNodes(QuadTreeNode node) {
+        if (node == null) return 0;
+        int count = 1;
+        for (QuadTreeNode child : node.children) {
+            count += countNodes(child);
+        }
+        return count;
+    }
 }

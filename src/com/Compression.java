@@ -136,8 +136,8 @@ public class Compression {
 
             long compressedSize = new File(outputPath).length();
             double compressionRatio = (1.0 - ((double) compressedSize / originalSize)) * 100;
-            int depth = CompressionUtils.computeDepth(root);
-            int nodeCount = CompressionUtils.countNodes(root);
+            int depth = QuadTreeNode.computeDepth(root);
+            int nodeCount = QuadTreeNode.countNodes(root);
 
             System.out.println("\n=== HASIL KOMPRESI ===");
             System.out.println("Waktu eksekusi: " + executionTime + " ms");
