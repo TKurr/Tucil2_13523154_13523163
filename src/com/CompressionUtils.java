@@ -9,7 +9,6 @@ import java.awt.Rectangle;
 
 public class CompressionUtils {
 
-    // Compute variance
     public static double computeVariance(BufferedImage img, Rectangle region, Color avgColor) {
         double sumVar = 0;
         int count = 0;
@@ -26,7 +25,6 @@ public class CompressionUtils {
         return sumVar / count;
     }
 
-    // Compute max depth of tree
     public static int computeDepth(QuadTreeNode node) {
         if (node == null || node.isLeaf) return 0;
         int maxDepth = 0;
@@ -36,7 +34,6 @@ public class CompressionUtils {
         return maxDepth + 1;
     }
 
-    // Count total nodes in tree
     public static int countNodes(QuadTreeNode node) {
         if (node == null) return 0;
         int count = 1;
@@ -46,7 +43,6 @@ public class CompressionUtils {
         return count;
     }
 
-    // Compute average color
     public static Color computeAverageColor(BufferedImage img, Rectangle region) {
         int sumR = 0, sumG = 0, sumB = 0, count = 0;
         for (int y = region.y; y < region.y + region.height; y++) {
@@ -61,7 +57,6 @@ public class CompressionUtils {
         return new Color(sumR / count, sumG / count, sumB / count);
     }
 
-    // Draw compressed image
     public static void drawCompressedImage(Graphics g, QuadTreeNode node) {
         if (node == null) return;
 
@@ -78,29 +73,22 @@ public class CompressionUtils {
         }
     }
 
-    // Compute Mean Absolute Deviation (MAD)
     public static double computeMAD(BufferedImage img, Rectangle region, Color avgColor) {
-        double sumMAD_R = 0, sumMAD_G = 0, sumMAD_B = 0;
+        double sumVar = 0;
         int count = 0;
-
         for (int y = region.y; y < region.y + region.height; y++) {
             for (int x = region.x; x < region.x + region.width; x++) {
                 Color c = new Color(img.getRGB(x, y));
-
-                sumMAD_R += Math.abs(c.getRed() - avgColor.getRed());
-                sumMAD_G += Math.abs(c.getGreen() - avgColor.getGreen());
-                sumMAD_B += Math.abs(c.getBlue() - avgColor.getBlue());
+                double diff = (c.getRed() - avgColor.getRed()) + 
+                              (c.getGreen() - avgColor.getGreen()) + 
+                              (c.getBlue() - avgColor.getBlue());
+                sumVar += Math.abs(diff);
                 count++;
             }
         }
-        double madR = sumMAD_R / count;
-        double madG = sumMAD_G / count;
-        double madB = sumMAD_B / count;
-
-        return (madR + madG + madB) / 3.0;
+        return sumVar / count;
     }
 
-    // Compute Max Pixel Difference
     public static double computeMaxPixelDifference(BufferedImage img, Rectangle region, Color avgColor) {
         int maxR = Integer.MIN_VALUE, minR = Integer.MAX_VALUE;
         int maxG = Integer.MIN_VALUE, minG = Integer.MAX_VALUE;
@@ -128,7 +116,6 @@ public class CompressionUtils {
         return (DR + DG + DB) / 3.0;
     }
 
-    // Compute Entropy
     public static double computeEntropy(BufferedImage img, Rectangle region) {
         int[] histogramR = new int[256];
         int[] histogramG = new int[256];
@@ -151,18 +138,16 @@ public class CompressionUtils {
         return (entropyR + entropyG + entropyB) / 3.0;
     }
 
-    // Fungsi untuk menghitung entropi untuk satu warna
     public static double computeChannelEntropy(int[] histogram, int totalPixels) {
         double entropy = 0.0;
         for (int i = 0; i < 256; i++) {
             if (histogram[i] > 0) {
                 double probability = (double) histogram[i] / totalPixels;
-                entropy -= probability * Math.log(probability) / Math.log(2); // log2
+                entropy -= probability * Math.log(probability) / Math.log(2); 
             }
         }
         return entropy;
     }
-    // Compute Structural Similarity Index (SSIM)
     public static double computeSSIM(BufferedImage img, Rectangle region) {
         int width = region.width;
         int height = region.height;

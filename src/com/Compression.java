@@ -11,18 +11,17 @@ import javax.imageio.ImageIO;
 
 public class Compression {
 
-    // Fungsi untuk memilih metode pengukuran error
     public static double computeError(BufferedImage img, Rectangle region, Color avgColor, String errorMethod) {
         switch (errorMethod) {
-            case "1": // Variance
+            case "1": 
                 return CompressionUtils.computeVariance(img, region, avgColor);
-            case "2": // MAD
+            case "2": 
                 return CompressionUtils.computeMAD(img, region, avgColor);
-            case "3": // Max Pixel Difference
+            case "3": 
                 return CompressionUtils.computeMaxPixelDifference(img, region, avgColor);
-            case "4": // Entropy
+            case "4": 
                 return CompressionUtils.computeEntropy(img, region);
-            case "5": // Structural Similarity Index (SSIM)
+            case "5": 
                 return CompressionUtils.computeSSIM(img, region);
             default:
                 throw new IllegalArgumentException("Metode error tidak valid.");
@@ -30,7 +29,7 @@ public class Compression {
     }
 
     public static QuadTreeNode buildQuadTree(BufferedImage img, Rectangle region, double threshold, int minBlockSize, String errorMethod) {
-        if (region.width <= minBlockSize || region.height <= minBlockSize) {
+        if (region.width * region.height <= minBlockSize) {
             return new QuadTreeNode(region, CompressionUtils.computeAverageColor(img, region), true);
         }
 

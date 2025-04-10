@@ -13,6 +13,6 @@ public class QuadTreeNode {
         this.region = region;
         this.averageColor = color;
         this.isLeaf = leaf;
-        this.children = new QuadTreeNode[4]; // 4 children for quad tree
+        this.children = new QuadTreeNode[4];
     }
 }
