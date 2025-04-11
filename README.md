@@ -37,5 +37,5 @@ Output program berupa:
 ---
 
 ## Identitas Pembuat
-Theo Kurniady  | 13523154
-Filbert Engyo  | 13523160
+1. Theo Kurniady  | 13523154
+2. Filbert Engyo  | 13523160
