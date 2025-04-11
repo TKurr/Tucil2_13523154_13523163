@@ -16,11 +16,11 @@ public class QuadTreeNode {
         this.children = new QuadTreeNode[4];
     }
 
-    public static int computeDepth(QuadTreeNode node) {
+    public static int countDepths(QuadTreeNode node) {
         if (node == null || node.isLeaf) return 0;
         int maxDepth = 0;
         for (QuadTreeNode child : node.children) {
-            maxDepth = Math.max(maxDepth, computeDepth(child));
+            maxDepth = Math.max(maxDepth, countDepths(child));
         }
         return maxDepth + 1;
     }

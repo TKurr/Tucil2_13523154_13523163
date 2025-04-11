@@ -9,7 +9,7 @@ import java.awt.Rectangle;
 
 public class CompressionUtils {
 
-    public static double computeVariance(BufferedImage img, Rectangle region, Color avgColor) {
+    public static double Variance(BufferedImage img, Rectangle region, Color avgColor) {
         double sumVar = 0;
         int count = 0;
         for (int y = region.y; y < region.y + region.height; y++) {
@@ -25,7 +25,7 @@ public class CompressionUtils {
         return sumVar / count;
     }
 
-    public static Color computeAverageColor(BufferedImage img, Rectangle region) {
+    public static Color AverageColor(BufferedImage img, Rectangle region) {
         int sumR = 0, sumG = 0, sumB = 0, count = 0;
         for (int y = region.y; y < region.y + region.height; y++) {
             for (int x = region.x; x < region.x + region.width; x++) {
@@ -55,7 +55,7 @@ public class CompressionUtils {
         }
     }
 
-    public static double computeMAD(BufferedImage img, Rectangle region, Color avgColor) {
+    public static double MAD(BufferedImage img, Rectangle region, Color avgColor) {
         double sumVar = 0;
         int count = 0;
         for (int y = region.y; y < region.y + region.height; y++) {
@@ -71,7 +71,7 @@ public class CompressionUtils {
         return sumVar / count;
     }
 
-    public static double computeMaxPixelDifference(BufferedImage img, Rectangle region, Color avgColor) {
+    public static double MaxPixelDifference(BufferedImage img, Rectangle region, Color avgColor) {
         int maxR = Integer.MIN_VALUE, minR = Integer.MAX_VALUE;
         int maxG = Integer.MIN_VALUE, minG = Integer.MAX_VALUE;
         int maxB = Integer.MIN_VALUE, minB = Integer.MAX_VALUE;
@@ -98,7 +98,7 @@ public class CompressionUtils {
         return (DR + DG + DB) / 3.0;
     }
 
-    public static double computeEntropy(BufferedImage img, Rectangle region) {
+    public static double Entropy(BufferedImage img, Rectangle region) {
         int[] histogramR = new int[256];
         int[] histogramG = new int[256];
         int[] histogramB = new int[256];
@@ -113,14 +113,14 @@ public class CompressionUtils {
             }
         }
 
-        double entropyR = computeChannelEntropy(histogramR, totalPixels);
-        double entropyG = computeChannelEntropy(histogramG, totalPixels);
-        double entropyB = computeChannelEntropy(histogramB, totalPixels);
+        double entropyR = entropyHelper(histogramR, totalPixels);
+        double entropyG = entropyHelper(histogramG, totalPixels);
+        double entropyB = entropyHelper(histogramB, totalPixels);
 
         return (entropyR + entropyG + entropyB) / 3.0;
     }
 
-    public static double computeChannelEntropy(int[] histogram, int totalPixels) {
+    public static double entropyHelper(int[] histogram, int totalPixels) {
         double entropy = 0.0;
         for (int i = 0; i < 256; i++) {
             if (histogram[i] > 0) {
@@ -130,7 +130,7 @@ public class CompressionUtils {
         }
         return entropy;
     }
-    public static double computeSSIM(BufferedImage img, Rectangle region) {
+    public static double SSIM(BufferedImage img, Rectangle region) {
         int width = region.width;
         int height = region.height;
 

@@ -10,19 +10,21 @@ import java.util.Scanner;
 import javax.imageio.ImageIO;
 
 public class Compression {
-
-    public static double computeError(BufferedImage img, Rectangle region, Color avgColor, String errorMethod) {
+    public static boolean isSSIM =  false;
+    
+    public static double selectMethod(BufferedImage img, Rectangle region, Color avgColor, String errorMethod) {
         switch (errorMethod) {
             case "1": 
-                return CompressionUtils.computeVariance(img, region, avgColor);
+                return CompressionUtils.Variance(img, region, avgColor);
             case "2": 
-                return CompressionUtils.computeMAD(img, region, avgColor);
+                return CompressionUtils.MAD(img, region, avgColor);
             case "3": 
-                return CompressionUtils.computeMaxPixelDifference(img, region, avgColor);
+                return CompressionUtils.MaxPixelDifference(img, region, avgColor);
             case "4": 
-                return CompressionUtils.computeEntropy(img, region);
+                return CompressionUtils.Entropy(img, region);
             case "5": 
-                return CompressionUtils.computeSSIM(img, region);
+                isSSIM = true;
+                return CompressionUtils.SSIM(img, region);
             default:
                 throw new IllegalArgumentException("Metode error tidak valid.");
         }
@@ -30,14 +32,19 @@ public class Compression {
 
     public static QuadTreeNode buildQuadTree(BufferedImage img, Rectangle region, double threshold, int minBlockSize, String errorMethod) {
         if (region.width * region.height <= minBlockSize) {
-            return new QuadTreeNode(region, CompressionUtils.computeAverageColor(img, region), true);
+            return new QuadTreeNode(region, CompressionUtils.AverageColor(img, region), true);
         }
 
-        Color avgColor = CompressionUtils.computeAverageColor(img, region);
-        double error = computeError(img, region, avgColor, errorMethod); 
-
-        if (error <= threshold) {
-            return new QuadTreeNode(region, avgColor, true);
+        Color avgColor = CompressionUtils.AverageColor(img, region);
+        double error = selectMethod(img, region, avgColor, errorMethod); 
+        if (isSSIM){
+            if (error > threshold) {
+                return new QuadTreeNode(region, avgColor, false);
+            }
+        } else {
+            if (error <= threshold) {
+                return new QuadTreeNode(region, avgColor, true);
+            }
         }
 
         int halfWidth = region.width / 2;
@@ -56,10 +63,18 @@ public class Compression {
 
         boolean shouldDivide = true;
         for (Rectangle subRegion : subRegions) {
-            double subError = computeError(img, subRegion, CompressionUtils.computeAverageColor(img, subRegion), errorMethod);
-            if (subError <= threshold) {
-                shouldDivide = false;
-                break;
+            double subError = selectMethod(img, subRegion, CompressionUtils.AverageColor(img, subRegion), errorMethod);
+            if (isSSIM){
+                if (subError > threshold) {
+                    shouldDivide = false;
+                    break;
+                }
+            } 
+            else {
+                if (subError <= threshold) {
+                    shouldDivide = false;
+                    break;
+                }
             }
         }
 
@@ -81,18 +96,6 @@ public class Compression {
         System.out.print("Masukkan alamat absolut gambar yang akan dikompresi: ");
         String inputPath = scanner.nextLine();
 
-        File inputFile = new File(inputPath);
-        if (!inputFile.exists()) {
-            System.out.println("File gambar tidak ditemukan.");
-            return;
-        }
-
-        System.out.print("Masukkan ambang batas error: ");
-        double threshold = scanner.nextDouble();
-
-        System.out.print("Masukkan ukuran blok minimum: ");
-        int minBlockSize = scanner.nextInt();
-
         String errorMethod = "";
         while (true) {
             System.out.println("\nPilih metode pengukuran error:");
@@ -110,6 +113,18 @@ public class Compression {
                 System.out.println("Masukan salah! Silakan pilih antara 1 sampai 5.");
             }
         }
+
+        File inputFile = new File(inputPath);
+        if (!inputFile.exists()) {
+            System.out.println("File gambar tidak ditemukan.");
+            return;
+        }
+
+        System.out.print("Masukkan ambang batas error: ");
+        double threshold = scanner.nextDouble();
+
+        System.out.print("Masukkan ukuran blok minimum: ");
+        int minBlockSize = scanner.nextInt();
 
         System.out.print("Masukkan nama file output (tanpa ekstensi .png): ");
         String outputFileName = scanner.next();
@@ -136,7 +151,7 @@ public class Compression {
 
             long compressedSize = new File(outputPath).length();
             double compressionRatio = (1.0 - ((double) compressedSize / originalSize)) * 100;
-            int depth = QuadTreeNode.computeDepth(root);
+            int depth = QuadTreeNode.countDepths(root);
             int nodeCount = QuadTreeNode.countNodes(root);
 
             System.out.println("\n=== HASIL KOMPRESI ===");
