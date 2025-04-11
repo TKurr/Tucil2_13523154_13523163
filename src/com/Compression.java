@@ -1,9 +1,8 @@
 package com;
 
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Rectangle;
-
-import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.Scanner;
@@ -39,7 +38,7 @@ public class Compression {
         double error = selectMethod(img, region, avgColor, errorMethod); 
         if (isSSIM){
             if (error > threshold) {
-                return new QuadTreeNode(region, avgColor, false);
+                return new QuadTreeNode(region, avgColor, true);
             }
         } else {
             if (error <= threshold) {
@@ -96,6 +95,12 @@ public class Compression {
         System.out.print("Masukkan alamat absolut gambar yang akan dikompresi: ");
         String inputPath = scanner.nextLine();
 
+        File inputFile = new File(inputPath);
+        if (!inputFile.exists()) {
+            System.out.println("File gambar tidak ditemukan.");
+            return;
+        }
+
         String errorMethod = "";
         while (true) {
             System.out.println("\nPilih metode pengukuran error:");
@@ -112,12 +117,6 @@ public class Compression {
             } else {
                 System.out.println("Masukan salah! Silakan pilih antara 1 sampai 5.");
             }
-        }
-
-        File inputFile = new File(inputPath);
-        if (!inputFile.exists()) {
-            System.out.println("File gambar tidak ditemukan.");
-            return;
         }
 
         System.out.print("Masukkan ambang batas error: ");
